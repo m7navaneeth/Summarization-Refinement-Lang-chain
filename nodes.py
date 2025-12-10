@@ -2,8 +2,6 @@ from typing import Dict, Any, List
 from .tools import TOOLS
 import asyncio
 
-# Node implementations. Each node is an async function accepting the shared state dict.
-# They should read/modify state and return an outcome string (for branching) or None.
 
 async def split_text(state: Dict[str, Any]) -> str:
     text = state.get("text", "")
@@ -11,7 +9,7 @@ async def split_text(state: Dict[str, Any]) -> str:
     chunks = [text[i:i+chunk_size] for i in range(0, len(text), chunk_size)] if text else []
     state["chunks"] = chunks
     state.setdefault("logs", []).append(f"split_text -> {len(chunks)} chunks")
-    await asyncio.sleep(0)  # keep it async-friendly
+    await asyncio.sleep(0) 
     return "ok"
 
 async def generate_summaries(state: Dict[str, Any]) -> str:
@@ -43,7 +41,7 @@ async def refine_summary(state: Dict[str, Any]) -> str:
     if refiner is None:
         raise RuntimeError(f"refiner {refiner_name} not found")
     merged = state.get("merged", "")
-    # target chars can be provided as limit; default 800
+    
     target_chars = int(state.get("limit", 800))
     refined = refiner(merged, target_chars)
     state["summary"] = refined
