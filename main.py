@@ -26,13 +26,13 @@ async def run_graph_endpoint(payload: GraphRunRequest, background_tasks: Backgro
         raise HTTPException(404, "graph not found")
     run_rec = store.new_run(payload.graph_id, payload.initial_state)
     run_rec.logs.append("created run")
-    # start background execution optionally
+    
     if payload.run_async:
-        # schedule background task
+        
         background_tasks.add_task(engine.run_graph, payload.graph_id, run_rec.run_id)
         run_rec.status = "running"
     else:
-        # run synchronously (blocking) - run in current event loop
+      
         await engine.run_graph(payload.graph_id, run_rec.run_id)
     return {"run_id": run_rec.run_id, "status": run_rec.status, "state": run_rec.state, "logs": run_rec.logs}
 
@@ -43,7 +43,7 @@ async def get_run_state(run_id: str):
         raise HTTPException(404, "run not found")
     return {"run_id": rec.run_id, "status": rec.status, "state": rec.state, "logs": rec.logs}
 
-# Optional: Websocket for streaming logs for a run
+
 @app.websocket("/ws/run/{run_id}")
 async def websocket_run(ws: WebSocket, run_id: str):
     await ws.accept()
@@ -60,12 +60,12 @@ async def websocket_run(ws: WebSocket, run_id: str):
             pass
 
     try:
-        # Attach a simple polling/stream: send updates every 1s until finished
+        
         while rec.status not in ("finished", "failed"):
             await ws.send_json({"run_id": rec.run_id, "status": rec.status, "state": rec.state, "logs": rec.logs[-5:]})
             await asyncio.sleep(1)
             rec = store.get_run(run_id)
-        # final send
+        
         await ws.send_json({"run_id": rec.run_id, "status": rec.status, "state": rec.state, "logs": rec.logs[-20:]})
         await ws.close()
     except WebSocketDisconnect:
