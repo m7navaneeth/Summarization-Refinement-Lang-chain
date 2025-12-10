@@ -3,12 +3,12 @@ from pydantic import BaseModel
 
 class NodeDef(BaseModel):
     name: str
-    func: str  # name of registered function
+    func: str  
 
 class GraphCreateRequest(BaseModel):
-    nodes: Dict[str, str]  # node_name -> func_name
-    edges: Dict[str, Optional[str]]  # node_name -> next_node_name (or null)
-    branches: Optional[Dict[str, Dict[str, Optional[str]]]] = None  # node -> {outcome: node}
+    nodes: Dict[str, str] 
+    edges: Dict[str, Optional[str]]  
+    branches: Optional[Dict[str, Dict[str, Optional[str]]]] = None  
 
 class GraphResponse(BaseModel):
     graph_id: str
