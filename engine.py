@@ -4,14 +4,7 @@ from .run_store import store
 from . import nodes
 import inspect
 
-# A minimal synchronous graph definition:
-# graph = {
-#   "nodes": {"split_text": "split_text", ...},  # node_name -> function_name (string)
-#   "edges": {"split_text": "generate_summaries", ...},  # linear mapping or next
-#   "branches": {"check_length": {"too_long": "refine_summary", "ok": "end"}}
-# }
 
-# Function registry mapping function names to callable node functions
 NODE_FUNCS = {
     "split_text": nodes.split_text,
     "generate_summaries": nodes.generate_summaries,
@@ -32,9 +25,9 @@ async def run_graph(graph_id: str, run_id: str, stream_callback: Optional[callab
     state = rec.state
     logs = rec.logs
     try:
-        # Determine start node: pick a node with no incoming edges or 'split_text' if present
+       
         start = None
-        # compute incoming set
+        
         incoming = set()
         for k, v in (graph.get("edges") or {}).items():
             if v:
@@ -44,11 +37,11 @@ async def run_graph(graph_id: str, run_id: str, stream_callback: Optional[callab
                 start = n
                 break
         if start is None:
-            # fallback
+           
             start = list(graph.get("nodes", {}).keys())[0]
         current = start
 
-        # Basic loop guard
+        
         steps = 0
         MAX_STEPS = int(state.get("max_steps", 200))
         while current and steps < MAX_STEPS:
@@ -67,22 +60,21 @@ async def run_graph(graph_id: str, run_id: str, stream_callback: Optional[callab
             if stream_callback:
                 await stream_callback(rec.run_id, rec.state, rec.logs[-1])
 
-            # Call node function
+           
             result = await node_fn(rec.state)
 
-            # Branching resolution
             if graph.get("branches") and current in (graph.get("branches") or {}):
-                # branches[current] maps result->next node or 'end'
+                
                 branch_map = graph["branches"][current]
                 next_node = branch_map.get(result)
                 current = next_node
             else:
-                # simple linear edge
+               
                 current = graph.get("edges", {}).get(current)
 
             if stream_callback:
                 await stream_callback(rec.run_id, rec.state, f"next -> {current}")
-            await asyncio.sleep(0)  # yield
+            await asyncio.sleep(0)  
 
         rec.status = "finished"
         rec.logs.append("finished")
