@@ -9,13 +9,13 @@ class RunRecord:
     graph_id: str
     state: Dict[str, Any]
     logs: list = field(default_factory=list)
-    status: str = "pending"  # pending, running, finished, failed
+    status: str = "pending" 
     lock: asyncio.Lock = field(default_factory=asyncio.Lock)
 
 class InMemoryStore:
     def __init__(self):
-        self.graphs = {}  # graph_id -> graph dict
-        self.runs = {}    # run_id -> RunRecord
+        self.graphs = {}  
+        self.runs = {}    
 
     def save_graph(self, graph_id: str, graph: dict):
         self.graphs[graph_id] = graph
