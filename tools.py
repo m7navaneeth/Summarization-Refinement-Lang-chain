@@ -1,7 +1,7 @@
 from typing import Callable, Dict, Any, List
 import re
 
-# Tool registry: simple dict mapping name -> function
+
 TOOLS: Dict[str, Callable] = {}
 
 def register_tool(name: str):
@@ -10,7 +10,7 @@ def register_tool(name: str):
         return fn
     return _decorator
 
-# Example rule-based summarizer
+
 @register_tool("rule_summarize")
 def rule_summarize(text: str, max_sentences: int = 3) -> str:
     """
@@ -18,7 +18,7 @@ def rule_summarize(text: str, max_sentences: int = 3) -> str:
     - split into sentences
     - return the first N sentences, after trimming and deduping
     """
-    # naive sentence split
+    
     sentences = re.split(r'(?<=[.!?])\s+', text.strip())
     seen = set()
     out = []
@@ -34,7 +34,7 @@ def rule_summarize(text: str, max_sentences: int = 3) -> str:
             break
     return " ".join(out)
 
-# Basic refinement/compression tool
+
 @register_tool("basic_refine")
 def basic_refine(text: str, target_chars: int = 800) -> str:
     """
@@ -42,13 +42,13 @@ def basic_refine(text: str, target_chars: int = 800) -> str:
     - Collapse repeated whitespace
     - If still too long, truncate gracefully at sentence boundary
     """
-    # collapse whitespace
+    
     t = re.sub(r'\s+', ' ', text).strip()
-    # remove obviously repeated substrings (very naive)
+    
     t = re.sub(r'(.{20,}?)\s+\1', r'\1', t)
     if len(t) <= target_chars:
         return t
-    # try to cut by sentences
+    
     sentences = re.split(r'(?<=[.!?])\s+', t)
     result = []
     total = 0
@@ -59,5 +59,5 @@ def basic_refine(text: str, target_chars: int = 800) -> str:
         total += len(s)
     if result:
         return " ".join(result).strip()
-    # fallback: truncate
+    
     return t[:target_chars].rsplit(' ', 1)[0] + "…"
